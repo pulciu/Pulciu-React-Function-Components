@@ -1,6 +1,6 @@
 # Pulciu
 
-This is a portfolio website built on React using **function component**s.
+This is a portfolio website built on React using **function components**.
 
 ## Install
 
