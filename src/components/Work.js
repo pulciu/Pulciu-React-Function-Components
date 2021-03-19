@@ -1,61 +1,116 @@
 import React from "react";
-import { filterByCategory, getFavoritesFromLink } from "../api/PortfolioItems";
+import axios from "axios";
 import WorkEntry from "./WorkEntry";
 import WorkNav from "./WorkNav";
 import "./Work.css";
 
 const Work = (props) => {
-	const [portfolioItems, setPortfolioItems] = React.useState(filterByCategory("uiux"));
+	const [allPortfolioItems, setAllPortfolioItems] = React.useState([]);
+	const [portfolioDisplayed, setPortfolioDisplayed] = React.useState([]);
 	const [favorites, setFavorites] = React.useState([]);
 	const [category, setCategory] = React.useState("uiux");
 	const [transition, setTransition] = React.useState("");
 	const [portfolioUpdate, setPortfolioUpdate] = React.useState();
+	const [shareText, setShareText] = React.useState("Copy Link");
+	const [searchValue, setSearchValue] = React.useState("");
 
-	const updatePortfolio = (newPortfolio) => {
+	React.useEffect(() => {
+		// Get the portfolio items
+		axios.get("../resources/portfolio.json").then((response) => {
+			setAllPortfolioItems(response.data.portfolio);
+
+			// If the current URL contains a favorites collection, display those items, else display the UI/UX category
+			if (props.match.params.favoritesCollection) {
+				let favoriteIds = props.match.params.favoritesCollection.split("-");
+				let favorites = [];
+
+				for (let i = 0; i < favoriteIds.length; i++) {
+					favorites.push(response.data.portfolio[parseInt(favoriteIds[i])]);
+				}
+
+				setPortfolioDisplayed(favorites);
+				setFavorites(favorites);
+				setCategory("favorites");
+			} else {
+				setPortfolioDisplayed(response.data.portfolio.filter((p) => p.category === "uiux"));
+			}
+		});
+	}, [props.match.params.favoritesCollection]);
+
+	// Update the portfolio items that are being displayed via a quick fade in/out animation
+	const updateDisplayedPortfolio = (portfolioItems) => {
 		setTransition("fadeOut");
 		clearTimeout(portfolioUpdate);
 		setPortfolioUpdate(
 			setTimeout(function () {
-				setPortfolioItems([]);
-				setPortfolioItems(newPortfolio);
+				setPortfolioDisplayed([]);
+				setPortfolioDisplayed(portfolioItems);
 				setTransition("");
 			}, 300)
 		);
 	};
 
-	// Gets called by the heart icon in <WorkEntry />
-	const updateFavorites = (newFavorites) => {
+	const changeCategory = (newCategory) => {
+		setCategory(newCategory);
+
+		if (newCategory !== "search") {
+			if (newCategory === "favorites") {
+				updateDisplayedPortfolio(favorites);
+			} else {
+				updateDisplayedPortfolio(allPortfolioItems.filter((p) => p.category === newCategory));
+			}
+			setSearchValue("");
+		}
+	};
+
+	const searchPortfolio = (e) => {
+		setSearchValue(e.target.value);
+		updateDisplayedPortfolio(allPortfolioItems.filter((p) => p.title.toLowerCase().includes(e.target.value.toLowerCase())));
+	};
+
+	const createFavoritesLink = () => {
+		let windowLocation = window.location.href;
+		windowLocation = windowLocation.substr(0, windowLocation.lastIndexOf("/work") + 5); // Clean the URL in case it already contains a favorites collection
+
+		for (let i = 0; i < favorites.length; i++) {
+			let index = allPortfolioItems.indexOf(favorites[i]);
+			windowLocation += i > 0 ? "-" + index : "/" + index;
+		}
+
+		// Only works on HTTPS or localhost
+		navigator.clipboard.writeText(windowLocation);
+		setShareText("Copied!");
+		setTimeout(() => {
+			setShareText("Copy Link");
+		}, 5000);
+	};
+
+	// Called when the heart icon of a project is clicked
+	const addToFavorites = (portfolioItem) => {
+		let newFavorites = [...favorites, portfolioItem];
 		setFavorites(newFavorites);
 	};
 
-	// Update the favorites tab right away when removing an item, without the fade in / out animation provided by updatePortfolio()
-	const updateFavoritesTab = (newItems) => {
-		setPortfolioItems(newItems);
-	};
+	// Called when the slashed heart icon of a project is clicked
+	const removeFromFavorites = (portfolioItem) => {
+		let newFavorites = favorites.filter((n) => n !== portfolioItem);
+		setFavorites(newFavorites);
+		if (category === "favorites") setPortfolioDisplayed(newFavorites);
 
-	const updateCategory = (newCategory) => {
-		setCategory(newCategory);
-	};
-
-	React.useEffect(() => {
-		if (props.match.params.favoritesCollection) {
-			const favoritesCollection = getFavoritesFromLink(props.match.params.favoritesCollection);
-			setPortfolioItems(favoritesCollection);
-			setFavorites(favoritesCollection);
-			setCategory("favorites");
+		if (newFavorites.length === 0) {
+			setCategory("uiux");
+			updateDisplayedPortfolio(allPortfolioItems.filter((p) => p.category === "uiux"));
 		}
-
-		return () => {};
-	}, [props.match.params.favoritesCollection]);
+	};
 
 	return (
 		<div className="work rotate-in">
-			<WorkNav category={category} updateCategory={updateCategory} favorites={favorites} updatePortfolio={updatePortfolio} />
+			<WorkNav createFavoritesLink={createFavoritesLink} searchPortfolio={searchPortfolio} changeCategory={changeCategory} shareText={shareText} searchValue={searchValue} category={category} favorites={favorites} />
 
 			<div className="projects-grid">
 				<ul className={transition}>
-					{portfolioItems.map((p) => (
-						<WorkEntry key={portfolioItems.indexOf(p)} item={p} category={category} updateCategory={updateCategory} favorites={favorites} updateFavorites={updateFavorites} updatePortfolio={updatePortfolio} updateFavoritesTab={updateFavoritesTab} />
+					{portfolioDisplayed.map((p) => (
+						<WorkEntry key={portfolioDisplayed.indexOf(p)} item={p} favorites={favorites} addToFavorites={addToFavorites} removeFromFavorites={removeFromFavorites} />
 					))}
 				</ul>
 			</div>
