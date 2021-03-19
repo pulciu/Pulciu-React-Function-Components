@@ -9,7 +9,7 @@ const Work = (props) => {
 	const [portfolioDisplayed, setPortfolioDisplayed] = React.useState([]);
 	const [favorites, setFavorites] = React.useState([]);
 	const [category, setCategory] = React.useState("uiux");
-	const [transition, setTransition] = React.useState("");
+	const [transition, setTransition] = React.useState("fadeOut");
 	const [portfolioUpdate, setPortfolioUpdate] = React.useState();
 	const [shareText, setShareText] = React.useState("Copy Link");
 	const [searchValue, setSearchValue] = React.useState("");
@@ -28,11 +28,17 @@ const Work = (props) => {
 					favorites.push(response.data.portfolio[parseInt(favoriteIds[i])]);
 				}
 
-				setPortfolioDisplayed(favorites);
-				setFavorites(favorites);
-				setCategory("favorites");
+				setTimeout(function () {
+					setPortfolioDisplayed(favorites);
+					setFavorites(favorites);
+					setCategory("favorites");
+					setTransition("");
+				}, 300);
 			} else {
-				setPortfolioDisplayed(response.data.portfolio.filter((p) => p.category === "uiux"));
+				setTimeout(function () {
+					setPortfolioDisplayed(response.data.portfolio.filter((p) => p.category === "uiux"));
+					setTransition("");
+				}, 300);
 			}
 		});
 	}, [props.match.params.favoritesCollection]);
