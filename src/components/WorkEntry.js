@@ -1,7 +1,7 @@
 import React from "react";
 import "./WorkEntry.css";
 
-const Project = (props) => {
+const WorkEntry = (props) => {
 	const [imageClass, setImageClass] = React.useState("");
 
 	const showHeartIcon = (portfolioItem) => {
@@ -56,4 +56,4 @@ const Project = (props) => {
 	);
 };
 
-export default Project;
+export default WorkEntry;
