@@ -1,30 +1,13 @@
 import React from "react";
-import { filterByCategory } from "../api/PortfolioItems";
 import "./WorkEntry.css";
 
 const Project = (props) => {
 	const [imageClass, setImageClass] = React.useState("");
 
-	const addToFavorites = (portfolioItem) => {
-		let newFavorites = [...props.favorites, portfolioItem];
-		props.updateFavorites(newFavorites);
-	};
-
-	const removeFromFavorites = (portfolioItem) => {
-		let newFavorites = props.favorites.filter((n) => n !== portfolioItem);
-		props.updateFavorites(newFavorites);
-		if (props.category === "favorites") props.updateFavoritesTab(newFavorites);
-
-		if (newFavorites.length === 0) {
-			props.updateCategory("uiux");
-			props.updatePortfolio(filterByCategory("uiux"));
-		}
-	};
-
 	const showHeartIcon = (portfolioItem) => {
 		if (props.favorites.includes(portfolioItem)) {
 			return (
-				<div className="add-favorite icon favorite" onClick={() => removeFromFavorites(portfolioItem)}>
+				<div className="add-favorite icon favorite" onClick={() => props.removeFromFavorites(portfolioItem)}>
 					<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 509.8 439.6" xmlSpace="preserve">
 						<path
 							d="M79.5,299.2C65.4,286,53,273.8,44,263.8c-55.8-62-55.2-151.5,1.4-208.2c28-27.9,65.2-43.3,104.8-43.3
@@ -40,7 +23,7 @@ const Project = (props) => {
 			);
 		} else {
 			return (
-				<div className="add-favorite icon" onClick={() => addToFavorites(portfolioItem)}>
+				<div className="add-favorite icon" onClick={() => props.addToFavorites(portfolioItem)}>
 					<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 509.8 430.7" xmlSpace="preserve">
 						<path
 							className="st0"
