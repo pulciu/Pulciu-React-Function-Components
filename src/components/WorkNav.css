@@ -172,7 +172,6 @@
 	position: absolute;
 	right: 25px;
 	top: 50%;
-	margin-top: -6px;
 	transform: translateY(-50%);
 	-ms-transform: translateY(-50%);
 	-webkit-transform: translateY(-50%);
