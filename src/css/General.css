@@ -337,8 +337,8 @@ body {
 		position: static;
 	}
 
-	.pages-container > div {
-		transform: none !important;
-		animation: none !important;
+	.perspective > div.rotate-in {
+		transform: none;
+		animation: none;
 	}
 }
